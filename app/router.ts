@@ -1,5 +1,5 @@
 import { RESP } from "./resp";
-import { echoCommand, pingCommand } from "./commands";
+import { echoCommand, pingCommand, setCommand, getCommand } from "./commands";
 
 export class CommandRouter {
   private commands: Map<string, (args: string[]) => string>;
@@ -9,6 +9,9 @@ export class CommandRouter {
 
     this.register("ECHO", echoCommand);
     this.register("PING", pingCommand);
+    this.register("SET", setCommand);
+    this.register("GET", getCommand);
+
   }
 
   private register(name: string, handler: (args: string[]) => string): void {
