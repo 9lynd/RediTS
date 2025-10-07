@@ -1,13 +1,28 @@
 import * as net from "net";
+import { RESP } from "./resp";
+import { CommandRouter } from "./router";
 
-// You can use print statements as follows for debugging, they'll be visible when running tests.
 console.log("Logs from your program will appear here!");
 
-// Uncomment this block to pass the first stage
+const router = new CommandRouter();
+
 const server: net.Server = net.createServer((connection: net.Socket) => {
   // Handle connection
   connection.on("data", (data: Buffer) => {
-  connection.write(`+PONG\r\n`);
+  try {
+    const decoded = RESP.decode(data);
+
+    const command = Array.isArray(decoded[0]) ?
+    (decoded[0] as string[])
+    : (decoded as string[]);
+
+    const response = router.execute(command);
+    
+    connection.write(response);
+
+  }catch (error) {
+    connection.write(RESP.encode.error(`Internal server error`));
+  }
   });
 });
 
