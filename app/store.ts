@@ -2,11 +2,14 @@ export class Store {
   private data: Map<string, string>;
 
   constructor() {
-    this.data = new Map();
+    this.data = new Map<string, string>();
   }
 
-  public set(key: string, value: string): void {
+  public set(key: string, value: string, expiresAt?: Date): void {
     this.data.set(key, value);
+    if(expiresAt) {
+      setTimeout(() => this.delete(key), expiresAt.getTime() - Date.now());
+    }
   }
 
   public get(key: string): string | null {
