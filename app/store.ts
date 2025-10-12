@@ -1,5 +1,7 @@
+type RedisValue = string | string[];
+
 export class Store {
-  private data: Map<string, string>;
+  private data: Map<string, RedisValue>;
 
   constructor() {
     this.data = new Map<string, string>();
@@ -14,7 +16,23 @@ export class Store {
 
   public get(key: string): string | null {
     const value = this.data.get(key);
-    return value !== undefined ? value : null;
+    if (typeof value === 'string') {
+      return value;
+    }
+    return null;
+  }
+
+  public rpush(key: string, ...values: string[]): number {
+    const exist = this.data.get(key);
+    if (exist === undefined) {
+      this.data.set(key, [...values]);
+      return values.length;
+    }
+    if(Array.isArray(exist)) {
+      exist.push(...values);
+      return exist.length
+    }
+    throw new Error("WRONGTYPE Operation against a key holding the wrong number of values")
   }
 
   public has(key: string): boolean {
