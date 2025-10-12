@@ -35,6 +35,21 @@ export class Store {
     throw new Error("WRONGTYPE Operation against a key holding the wrong number of values")
   }
 
+  public lpush(key: string, ...values: string[]): number {
+    const exist = this.data.get(key);
+    if(exist === undefined) {
+      this.data.set(key, [...values].reverse());
+      return values.length;
+    }
+
+    if (Array.isArray(exist)) {
+      exist.unshift(...values.reverse());
+      return exist.length;
+    }
+
+    throw new Error("WRONGTYPE Operation against a key holding the wrong number of values");
+  }
+
   public lrange(key: string, start: number, stop: number): string[] {
     const exist = this.data.get(key);
     if (exist === undefined) {

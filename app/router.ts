@@ -1,5 +1,5 @@
 import { RESP } from "./resp";
-import { echoCommand, pingCommand, setCommand, getCommand, rpushCommand, lrangeCommand } from "./commands";
+import { echoCommand, pingCommand, setCommand, getCommand, rpushCommand, lrangeCommand, lpushCommand } from "./commands";
 
 export class CommandRouter {
   private commands: Map<string, (args: string[]) => string>;
@@ -12,7 +12,8 @@ export class CommandRouter {
     this.register("SET", setCommand);
     this.register("GET", getCommand);
     this.register("RPUSH", rpushCommand);
-    this.register("LRANGE", lrangeCommand)
+    this.register("LRANGE", lrangeCommand);
+    this.register("LPUSH", lpushCommand);
 
   }
 
