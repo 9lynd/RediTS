@@ -35,6 +35,30 @@ export class Store {
     throw new Error("WRONGTYPE Operation against a key holding the wrong number of values")
   }
 
+  public lrange(key: string, start: number, stop: number): string[] {
+    const exist = this.data.get(key);
+    if (exist === undefined) {
+      return [];
+    }
+    // key exists, but it's not a list
+    if(!Array.isArray(exist)) {
+      throw new Error("WRONGTYPE Operation against a key holding the wrong number of values");
+    }
+    const length = exist.length;
+    let startIndex = start < 0 ? length + start : start;
+    let stopIndex = stop < 0 ? length + stop : stop;
+
+    // Clamp indexes to a valid range [0, length - 1]
+    startIndex = Math.max(0, startIndex);
+    stopIndex = Math.min(length - 1, stopIndex);
+
+    // check if start is after stop, or start is beyond array
+    if (startIndex > stopIndex || startIndex >= length) {
+      return [];
+    }
+    return exist.slice(startIndex, stopIndex + 1);
+  }
+
   public has(key: string): boolean {
     return this.data.has(key);
   }
