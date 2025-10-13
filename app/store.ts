@@ -74,6 +74,17 @@ export class Store {
     return exist.slice(startIndex, stopIndex + 1);
   }
 
+  public llen(key: string): number {
+    const exist = this.data.get(key);
+    if (exist === undefined) {
+      return 0;
+    }
+    if (!Array.isArray(exist)) {
+      throw new Error("WRONGTYPE Operation against a key holding the wrong number of values");
+    }
+    return exist.length;
+  }
+
   public has(key: string): boolean {
     return this.data.has(key);
   }
