@@ -85,6 +85,28 @@ export class Store {
     return exist.length;
   }
 
+  public lpop(key: string, count: number = 1): string | string[] | null {
+    const exist = this.data.get(key);
+    if (exist === undefined || exist.length === 0) {
+      return null;
+    }
+    if (!Array.isArray(exist)) {
+      throw new Error("WRONGTYPE Operation against a key holding the wrong number of values");
+    }
+    const index = Math.min(count, exist.length);
+    const removed = exist.splice(0, index);
+
+    if (exist.length === 0) {
+      this.data.delete(key);
+    }
+
+    if (count === 1) {
+      return removed[0];
+    }
+
+    return removed;
+  }
+
   public has(key: string): boolean {
     return this.data.has(key);
   }
