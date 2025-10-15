@@ -8,11 +8,12 @@ import {
   lrangeCommand, 
   lpushCommand, 
   llenCommand, 
-  lpopCommand 
+  lpopCommand, 
+  blpopCommand
 } from "./commands";
 
 export class CommandRouter {
-  private commands: Map<string, (args: string[]) => string>;
+  private commands: Map<string, (args: string[]) => string | Promise<string>>;
 
   constructor () {
     this.commands = new Map();
@@ -26,14 +27,15 @@ export class CommandRouter {
     this.register("LPUSH", lpushCommand);
     this.register("LLEN", llenCommand);
     this.register("LPOP", lpopCommand);
+    this.register("BLPOP", blpopCommand);
 
   }
 
-  private register(name: string, handler: (args: string[]) => string): void {
+  private register(name: string, handler: (args: string[]) => string | Promise<string>): void {
     this.commands.set(name.toUpperCase(), handler);
   }
 
-  public execute(command: string[]): string {
+  public execute(command: string[]): string | Promise<string> {
     if (command.length === 0) {
       return RESP.encode.error("ERR: no command provided!");
     }

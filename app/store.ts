@@ -111,6 +111,11 @@ export class Store {
     return this.data.has(key);
   }
 
+  public hasElements(key: string): boolean {
+    const exist = this.data.get(key);
+    return Array.isArray(exist) && exist.length > 0;
+  }
+  
   public delete(key: string): boolean {
     return this.data.delete(key);
   }

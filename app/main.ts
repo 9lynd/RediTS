@@ -9,6 +9,7 @@ const router = new CommandRouter();
 const server: net.Server = net.createServer((connection: net.Socket) => {
   // Handle connection
   connection.on("data", (data: Buffer) => {
+  (async () => {
   try {
     const decoded = RESP.decode(data);
 
@@ -16,13 +17,14 @@ const server: net.Server = net.createServer((connection: net.Socket) => {
     (decoded[0] as string[])
     : (decoded as string[]);
 
-    const response = router.execute(command);
+    const response = await router.execute(command);
     
     connection.write(response);
 
   }catch (error) {
     connection.write(RESP.encode.error(`Internal server error`));
   }
+})();
   });
 });
 
