@@ -8,3 +8,4 @@ export * from './lrange';
 export * from './llen';
 export * from './lpop';
 export * from './blpop';
+export * from './type';

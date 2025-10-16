@@ -9,7 +9,8 @@ import {
   lpushCommand, 
   llenCommand, 
   lpopCommand, 
-  blpopCommand
+  blpopCommand,
+  typeCommand
 } from "./commands";
 
 export class CommandRouter {
@@ -28,7 +29,7 @@ export class CommandRouter {
     this.register("LLEN", llenCommand);
     this.register("LPOP", lpopCommand);
     this.register("BLPOP", blpopCommand);
-
+    this.register("TYPE", typeCommand)
   }
 
   private register(name: string, handler: (args: string[]) => string | Promise<string>): void {

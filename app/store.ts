@@ -115,6 +115,14 @@ export class Store {
     const exist = this.data.get(key);
     return Array.isArray(exist) && exist.length > 0;
   }
+
+  public type(key: string): string | null {
+    const exist = this.data.get(key);
+    if (typeof exist === undefined) return null;
+    if (typeof exist === 'string') return 'string';
+    if (Array.isArray(exist)) return 'list';
+    return null;
+  }
   
   public delete(key: string): boolean {
     return this.data.delete(key);
