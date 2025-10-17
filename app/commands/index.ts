@@ -9,3 +9,4 @@ export * from './llen';
 export * from './lpop';
 export * from './blpop';
 export * from './type';
+export * from './xadd';
