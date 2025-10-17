@@ -17,7 +17,10 @@ export class StreamStore {
   }
 
   public xadd(key: string, id: string, fields: Map<string, string>): string {
-    const { millisecondsTime, sequenceNumber} = this.parseId(id);
+
+    const actualId = this.generateId(key, id);
+
+    const { millisecondsTime, sequenceNumber} = this.parseId(actualId);
     if (millisecondsTime === 0 && sequenceNumber === 0) {
       throw new Error("ERR The ID specified in XADD must be greater than 0-0");
     }
@@ -27,14 +30,14 @@ export class StreamStore {
     if (stream === undefined) {
       const newStream: StreamData = {
         entries: [{
-          id,
+          id: actualId,
           millisecondsTime,
           sequenceNumber,
           fields
         }]
       };
       this.streams.set(key, newStream);
-      return id;
+      return actualId;
     }
 
     if (stream.entries.length > 0) {
@@ -43,13 +46,13 @@ export class StreamStore {
     }
 
     stream.entries.push({
-      id,
+      id: actualId,
       millisecondsTime,
       sequenceNumber, 
       fields
     });
 
-    return id;
+    return actualId;
   }
 
   private parseId(id: string): { millisecondsTime: number; sequenceNumber: number } {
@@ -88,6 +91,62 @@ export class StreamStore {
         throw new Error("ERR The ID specified in XADD is equal or smaller than the target stream top item");
       }
     }
+  }
+
+  private generateId(key: string, id: string): string {
+    // case: Fully auto-generated IDs
+    if (id === '*') {
+      const currentTimeMs = Date.now();
+      return this.generateIdForTime(key, currentTimeMs);
+    }
+
+    // case: Partial auto-generated IDs
+    if(id.endsWith('-*')) {
+      const timePart = id.slice(0, -2); 
+      const millisecondsTime = parseInt(timePart);
+
+      if (isNaN(millisecondsTime)) {
+        throw new Error("ERR Invalid stream ID specified as stream command argument");
+      }
+      return this.generateIdForTime(key, millisecondsTime);
+    }
+
+    // case: Explicit ID (no auto-generation)
+    return id;
+  }
+
+  // Partially auto-generated IDs -> only sequence number auto-generated
+  private generateIdForTime (key: string, millisecondsTime: number): string {
+    const stream = this.streams.get(key);
+
+    // if time is 0, sequence number starts at 1 instead of default 0
+    if (millisecondsTime === 0) {
+      if (!stream || stream.entries.length === 0) {
+        return '0-1';
+      }
+    
+    const entriesWithTime0 = stream?.entries.filter( e => e.millisecondsTime = 0);
+    if (entriesWithTime0?.length === 0) {
+      return '0-1';
+    }
+
+    const maxSeq = Math.max(...entriesWithTime0.map(e => e.sequenceNumber));
+    return `0-${maxSeq + 1}`;
+    }
+
+    // for all other times
+    if(!stream || stream.entries.length === 0) {
+      return `${millisecondsTime}-0`
+    }
+
+    const entriesWithSameTime = stream.entries.filter(e => e.millisecondsTime === millisecondsTime);
+    if (entriesWithSameTime.length === 0) {
+      return `${millisecondsTime}-0`
+    }
+
+    // entries exist? increment last sequence number
+    const maxSeq = Math.max(...entriesWithSameTime.map(e => e.sequenceNumber));
+    return `${millisecondsTime}-${maxSeq + 1}`;
   }
 
   public has(key: string): boolean {
