@@ -1,5 +1,5 @@
 import { RESP } from '../resp';
-import { store } from '../store';
+import { store } from "../stores/store";
 
 export function lrangeCommand(args: string[]): string {
   if(args.length !== 3) {

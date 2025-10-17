@@ -4,7 +4,7 @@ export class Store {
   private data: Map<string, RedisValue>;
 
   constructor() {
-    this.data = new Map<string, string>();
+    this.data = new Map<string, RedisValue>();
   }
 
   public set(key: string, value: string, expiresAt?: Date): void {

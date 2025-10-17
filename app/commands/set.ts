@@ -1,5 +1,5 @@
 import { RESP } from "../resp";
-import { store } from "../store";
+import { store } from "../stores/store";
 
 export function setCommand(args: string[]): string {
 

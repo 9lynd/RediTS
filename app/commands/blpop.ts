@@ -1,5 +1,5 @@
 import { RESP } from "../resp";
-import { store } from "../store";
+import { store } from "../stores/store";
 import { blockingQueue } from "../queue/blockingQueue";
 
 export function blpopCommand(args: string[]): Promise<string> {
