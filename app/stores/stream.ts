@@ -149,6 +149,80 @@ export class StreamStore {
     return `${millisecondsTime}-${maxSeq + 1}`;
   }
 
+  public xrange(key: string, startId: string, endId: string): StreamEntry[] {
+    const stream = this.streams.get(key);
+    if (!stream) return [];
+    if (startId === '+' || endId === '-') return [];
+
+    const { time: startTime, seq: startSeq } = this.parseRangeId(startId, 'start');
+    const { time: endTime, seq: endSeq } = this.parseRangeId(endId, 'end');
+
+    if (startTime > endTime || startTime === endTime && startSeq > endSeq) return [];
+
+    return stream.entries.filter(entry => {
+      return this.isInRange(
+        entry.millisecondsTime,
+        entry.sequenceNumber,
+        startTime,
+        startSeq,
+        endTime,
+        endSeq
+      );
+    });
+  }
+
+  private parseRangeId(
+    id: string, 
+    type: 'start' | 'end'
+  ): { time: number; seq: number}
+  {
+
+    if (id === '-') return { time: 0, seq: 0 };
+    if (id === '+') return { time: Infinity, seq: Infinity };
+
+    const idParts = id.split('-');
+
+    // only time specified
+    if (idParts.length === 1) {
+      const time = parseInt(idParts[0]);
+      if (isNaN(time)) {
+        throw new Error("ERR Invalid stream ID specified as stream command argument");
+      }
+      // sequence: default is 0 for start, and infinity for end
+      const seq = type === 'start' ? 0 : Infinity;
+      return  { time, seq };
+    }
+
+    // full ID is specified: time + sequence
+    if (idParts.length === 2) {
+      const time = parseInt(idParts[0]);
+      const seq = parseInt(idParts[1]);
+
+      if (isNaN(time) || isNaN(seq)) {
+        throw new Error("ERR Invalid stream ID specified as stream command argument");
+      }
+
+      return { time, seq };
+    }
+    throw new Error("ERR Invalid stream ID specified as stream command argument");
+  }
+
+  // check which entries are in range to return with xrange command
+  private isInRange(
+    entryTime: number,
+    entrySeq: number,
+    startTime: number,
+    startSeq: number,
+    endTime: number,
+    endSeq: number
+  ): boolean {
+    if (entryTime < startTime || entryTime > endTime) return false;
+    if (entryTime === startTime && entrySeq < startSeq) return false;
+    if (entryTime === endTime && entrySeq > endSeq) return false;
+
+    return true;
+  }
+
   public has(key: string): boolean {
     return this.streams.has(key);
   }

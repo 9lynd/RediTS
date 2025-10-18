@@ -10,3 +10,4 @@ export * from './lpop';
 export * from './blpop';
 export * from './type';
 export * from './xadd';
+export * from './xrange';
