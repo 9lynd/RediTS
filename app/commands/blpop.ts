@@ -25,7 +25,7 @@ export function blpopCommand(args: string[]): Promise<string> {
       if (store.hasElements(key)) {
         const element = store.lpop(key, 1) as string;
 
-        const response = `*2\r\n$${key.length}\r\n${key}\r\n$${element.length}\r\n${element}\r\n`;
+        const response = RESP.encode.array([key, element]);
         return Promise.resolve(response);
       }
     } catch (error) {

@@ -1,3 +1,5 @@
+import { RESP } from "../resp";
+
 interface BlockedClient {
   keys: string[];
   resolve: (value: string) => void;
@@ -52,7 +54,7 @@ export class BlockingQueueManager {
           const element = checkElement(key);
 
           if(element !== null) {
-            const response = `*2\r\n$${key.length}\r\n${key}\r\n$${element.length}\r\n${element}\r\n`;
+            const response = RESP.encode.array([key, element]);
             this.unblockClient(client, response);
             return;
           }
