@@ -1,3 +1,4 @@
+import { type StreamEntry } from "../stores/stream";
 export class RESPEncoder {
 
   static bulkString(value: string): string {
@@ -51,7 +52,31 @@ static streamEntries(entries: Array<[string, string[]]>): string {
   return result;
 }
 
-  static null(): string {
-    return "$-1\r\n";
+static streams(streams: Array<[string, StreamEntry[]]>): string {
+  let result = `*${streams.length}\r\n`;
+
+  for (const [streamKey, entries] of streams) {
+    result += '*2\r\n';
+    result += this.bulkString(streamKey);
+
+    // Convert StreamEntry objects -> [id, [field1, value1, ...]]
+    const encodedEntries: Array<[string, string[]]> = entries.map(entry => {
+      const fieldsArray: string[] = [];
+      for (const [field, value] of entry.fields) {
+        fieldsArray.push(field);
+        fieldsArray.push(value);
+      }
+      return [entry.id, fieldsArray];
+    });
+
+    // Encode all entries for this stream
+    result += this.streamEntries(encodedEntries);
   }
+
+  return result;
+}
+
+static null(): string {
+  return "$-1\r\n";
+}
 }

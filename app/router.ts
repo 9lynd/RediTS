@@ -12,7 +12,8 @@ import {
   blpopCommand,
   typeCommand,
   xaddCommand,
-  xrangeCommand
+  xrangeCommand,
+  xreadCommand
 } from "./commands";
 
 export class CommandRouter {
@@ -34,6 +35,7 @@ export class CommandRouter {
     this.register("TYPE", typeCommand);
     this.register("XADD", xaddCommand);
     this.register("XRANGE", xrangeCommand);
+    this.register("XREAD", xreadCommand);
   }
 
   private register(name: string, handler: (args: string[]) => string | Promise<string>): void {

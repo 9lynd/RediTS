@@ -223,6 +223,39 @@ export class StreamStore {
     return true;
   }
 
+  public xread(keys: string[], lastIds: string[]): Array<[string, StreamEntry[]]> {
+    const result: Array<[string, StreamEntry[]]> = [];
+
+    for (let i = 0; i < keys.length; i++) {
+      const key = keys[i];
+      let lastId = lastIds[i];
+      const stream = this.streams.get(key);
+
+      if (!stream || stream.entries.length === 0) {
+        continue;
+      }
+
+      if (lastId === '$') {
+        const lastEntry = stream.entries[stream.entries.length - 1];
+        lastId = lastEntry.id;
+      }
+
+      const { millisecondsTime: lastTime, sequenceNumber: lastSeq } = this.parseId(lastId);
+
+      const newEntries = stream.entries.filter(entry => {
+        if (entry.millisecondsTime > lastTime) return true;
+        if (entry.millisecondsTime === lastTime && entry.sequenceNumber > lastSeq) return true;
+        return false;
+      });
+
+      if (newEntries.length > 0) { 
+        result.push([key, newEntries]);
+      }
+    }
+    console.log("XREAD result:", result);
+    return result
+  }
+
   public has(key: string): boolean {
     return this.streams.has(key);
   }
