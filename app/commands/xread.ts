@@ -71,6 +71,11 @@ export function xreadCommand(args: string[]): string | Promise<string> {
   if (blockMs === null) {
     try {
       const result = streamStore.xread(streamKeys, lastIds);
+
+      if (result.length === 0) {
+        return RESP.encode.nullArray();
+      }
+      
       return RESP.encode.streams(result);
     } catch (error) {
       if (error instanceof Error) {

@@ -79,4 +79,9 @@ static streams(streams: Array<[string, StreamEntry[]]>): string {
 static null(): string {
   return "$-1\r\n";
 }
+
+static nullArray(): string {
+  return "*-1\r\n";
+}
+
 }

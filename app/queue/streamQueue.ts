@@ -37,7 +37,7 @@ export class StreamBlockingQueueManager {
       // Set up timeout if not infinite
       if (timeoutMs !== Infinity) {
         client.timeoutId = setTimeout(() => {
-          this.unblockClient(client, RESP.encode.null());
+          this.unblockClient(client, RESP.encode.nullArray());
         }, timeoutMs);
       }
 
