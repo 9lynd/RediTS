@@ -12,3 +12,4 @@ export * from './type';
 export * from './xadd';
 export * from './xrange';
 export * from './xread';
+export * from './incr';
