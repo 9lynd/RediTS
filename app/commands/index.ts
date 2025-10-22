@@ -13,3 +13,6 @@ export * from './xadd';
 export * from './xrange';
 export * from './xread';
 export * from './incr';
+export * from './multi';
+export * from './exec';
+export * from './discard';

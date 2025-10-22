@@ -14,8 +14,13 @@ import {
   xaddCommand,
   xrangeCommand,
   xreadCommand,
-  incrCommand
+  incrCommand,
+  multiCommand,
+  discardCommand,
+  execCommand
 } from "./commands";
+import type { Socket } from "net";
+import { transactionManger } from "./transaction/transactionManager";
 
 export class CommandRouter {
   private commands: Map<string, (args: string[]) => string | Promise<string>>;
@@ -44,11 +49,35 @@ export class CommandRouter {
     this.commands.set(name.toUpperCase(), handler);
   }
 
-  public execute(command: string[]): string | Promise<string> {
+  public execute(command: string[], connection: Socket): string | Promise<string> {
     if (command.length === 0) {
       return RESP.encode.error("ERR: no command provided!");
     }
 
+    const commandName = command[0].toUpperCase();
+    const args = command.slice(1);
+
+    if (commandName === 'MULTI') {
+      return multiCommand(args, connection);
+    }
+    if (commandName === 'DISCARD') {
+      return discardCommand(args, connection);
+    }
+    if (commandName === 'EXEC') {
+      return execCommand(args, connection, (cmd) => {
+        return this.executeInternal(cmd);
+      })
+    }
+    
+    if (transactionManger.isInTransaction(connection)) {
+      transactionManger.queueCommand(connection, command);
+      return RESP.encode.simpleString("QUEUED");
+    }
+
+    return this.executeInternal(command);
+  }
+
+  private executeInternal(command: string[]): string | Promise<string> {
     const commandName = command[0].toUpperCase();
     const args = command.slice(1);
 

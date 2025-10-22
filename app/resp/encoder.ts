@@ -84,4 +84,16 @@ static nullArray(): string {
   return "*-1\r\n";
 }
 
+static emptyArray(): string {
+  return "*0\r\n";
+}
+
+static mixedArray(responses: string[]): string {
+  let result = `*${responses.length}\r\n`;
+  for (const response of responses) {
+    result += response;
+  }
+  return result;
+}
+
 }
