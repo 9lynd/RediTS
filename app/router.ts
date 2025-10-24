@@ -17,7 +17,10 @@ import {
   incrCommand,
   multiCommand,
   discardCommand,
-  execCommand
+  execCommand,
+  infoCommand,
+  replconfCommand,
+  psyncCommand
 } from "./commands";
 import type { Socket } from "net";
 import { transactionManger } from "./transaction/transactionManager";
@@ -43,6 +46,9 @@ export class CommandRouter {
     this.register("XRANGE", xrangeCommand);
     this.register("XREAD", xreadCommand);
     this.register("INCR", incrCommand);
+    this.register("INFO", infoCommand);
+    this.register("REPLCONF", replconfCommand);
+    this.register("PSYNC", psyncCommand);
   }
 
   private register(name: string, handler: (args: string[]) => string | Promise<string>): void {

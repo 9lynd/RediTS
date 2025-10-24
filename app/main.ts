@@ -2,10 +2,15 @@ import * as net from "net";
 import { RESP } from "./resp";
 import { CommandRouter } from "./router";
 import { transactionManger } from "./transaction/transactionManager";
+import { replicationConfig } from "./replication/config";
+import { performHandshake } from "./replication/handshake";
 
 console.log("Logs from your program will appear here!");
 
 const router = new CommandRouter();
+
+replicationConfig.parseArgs(process.argv.slice(2));
+console.log(`starting Redis Server on port ${replicationConfig.port} with ${replicationConfig.role} role`);
 
 const server: net.Server = net.createServer((connection: net.Socket) => {
   // Handle connection
@@ -33,4 +38,10 @@ const server: net.Server = net.createServer((connection: net.Socket) => {
   })
 });
 
-server.listen(6379, "127.0.0.1");
+server.listen(replicationConfig.port, "127.0.0.1", () => {
+  if(replicationConfig.isReplica()) {
+    performHandshake().catch((err) => {
+      console.error("Handshake failed:", err);
+    });
+  }
+});

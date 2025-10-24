@@ -16,3 +16,6 @@ export * from './incr';
 export * from './multi';
 export * from './exec';
 export * from './discard';
+export * from './info';
+export * from './psync';
+export * from './replconf';
