@@ -1,6 +1,7 @@
 import * as net from "net";
 import { RESP } from "../resp";
 import { replicationConfig } from "./config";
+import { handleMasterCommands } from "./master";
 
 export async function performHandshake(): Promise<void> {
   if(!replicationConfig.isReplica()) return;
@@ -16,6 +17,10 @@ export async function performHandshake(): Promise<void> {
     console.log("connected to master, handshaking...");
     startHandshake(connection, port);
   })
+
+  connection.on("error", (err) => {
+    console.error("connection to master failed: ", err);
+  });
 
 }
 
@@ -64,6 +69,11 @@ function startHandshake(connection: net.Socket, replicaPort: number): void {
   // Handle responses from master
   connection.on("data", (data: Buffer) => {
     console.log("Received from master:", data.toString());
+
+    if(step >= 4) {
+      handleMasterCommands(data, connection);
+      return;
+    }
     
     // After each response, send the next command
     if (step < 4) {

@@ -24,6 +24,8 @@ import {
 } from "./commands";
 import type { Socket } from "net";
 import { transactionManger } from "./transaction/transactionManager";
+import { replicationConfig } from "./replication/config";
+import { propagationManager } from "./replication/propagation";
 
 export class CommandRouter {
   private commands: Map<string, (args: string[]) => string | Promise<string>>;
@@ -74,16 +76,27 @@ export class CommandRouter {
         return this.executeInternal(cmd);
       })
     }
+
+    if (commandName === 'PSYNC') {
+      return psyncCommand(args, connection);
+    }
     
     if (transactionManger.isInTransaction(connection)) {
       transactionManger.queueCommand(connection, command);
       return RESP.encode.simpleString("QUEUED");
     }
 
-    return this.executeInternal(command);
+    const result = this.executeInternal(command);
+
+    // if in master node, propagate write commands to replicas
+    if (replicationConfig.isMaster() && propagationManager.isWriteCommand(commandName)) {
+      propagationManager.propagateCommand(command);
+    }
+
+    return result;
   }
 
-  private executeInternal(command: string[]): string | Promise<string> {
+  public executeInternal(command: string[]): string | Promise<string> {
     const commandName = command[0].toUpperCase();
     const args = command.slice(1);
 
