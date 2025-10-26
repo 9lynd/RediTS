@@ -18,10 +18,6 @@ export class PropagationManager {
     socket.on('close', () => {
       this.removeReplica(socket);
     })
-
-    socket.on('data',(data: Buffer) => {
-      this.handleReplicaResponse(socket, data);
-    })
   }
 
   private removeReplica(socket: Socket): void {
@@ -29,26 +25,15 @@ export class PropagationManager {
     console.log(`Replica disconnected, Total replicas: ${this.replicas.length}`);
   }
 
-  private handleReplicaResponse(socket: Socket, data: Buffer): void {
-    try {
-      const decoded = RESP.decode(data);
-      for (const item of decoded) {
-        if (Array.isArray(item)) {
-          const command = item as string[];
-          // Handle REPLCONF ACK <offset>
-          if (command[0]?.toUpperCase() === 'REPLCONF' && 
-              command[1]?.toUpperCase() === 'ACK') {
-            const offset = parseInt(command[2] || '0');
-            const replica = this.replicas.find(r => r.socket === socket);
-            if (replica) {
-              replica.lastAckOffset = offset;
-              console.log(`Replica ACK received: offset ${offset}`);
-            }
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Error handling replica response:', error);
+  public isReplicaConnection(socket: Socket): boolean {
+    return this.replicas.some(r => r.socket === socket);
+  }
+
+  public handleReplicaAck(socket: Socket, offset: number): void {
+    const replica = this.replicas.find(r => r.socket === socket);
+    if (replica) {
+      replica.lastAckOffset = offset;
+      console.log(`Replica ACK received: offset ${offset}`);
     }
   }
 

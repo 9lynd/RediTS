@@ -66,6 +66,15 @@ export class CommandRouter {
     const commandName = command[0].toUpperCase();
     const args = command.slice(1);
 
+    if (propagationManager.isReplicaConnection(connection)) {
+    if (commandName === 'REPLCONF' && args[0]?.toUpperCase() === 'ACK') {
+      const offset = parseInt(args[1] || '0');
+      propagationManager.handleReplicaAck(connection, offset);
+      return '';
+    }
+    return '';
+  }
+
     if (commandName === 'MULTI') {
       return multiCommand(args, connection);
     }
