@@ -26,6 +26,7 @@ export async function performHandshake(): Promise<void> {
 
 function startHandshake(connection: net.Socket, replicaPort: number): void {
   let step = 0;
+  let rdbReceived = false;
 
   const nextCommand = () => {
     step++;
@@ -71,6 +72,22 @@ function startHandshake(connection: net.Socket, replicaPort: number): void {
     console.log("Received from master:", data.toString());
 
     if(step >= 4) {
+      if(!rdbReceived && data[0] === 0x24) {
+        const firstCRLF = data.indexOf('\r\n');
+        if (firstCRLF !== -1) {
+          const rdbLength = parseInt(data.slice(1, firstCRLF).toString());
+          const rdbStart = firstCRLF + 2;
+          const rdbEnd = rdbStart + rdbLength;
+          console.log(`Received RDB file (${rdbLength} bytes)`);
+          rdbReceived = true;
+
+          if (data.length > rdbEnd) {
+            const remainingData = data.slice(rdbEnd);
+            handleMasterCommands(remainingData, connection);
+          }
+          return
+        }
+      }
       handleMasterCommands(data, connection);
       return;
     }

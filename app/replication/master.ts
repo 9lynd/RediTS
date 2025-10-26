@@ -6,9 +6,7 @@ import { Socket } from "net";
 const router = new CommandRouter();
 // handler function for commands received from master to replica
 export async function handleMasterCommands(data: Buffer, connection: Socket): Promise<void> {
-  // track offset
-  replicaOffsetTracker.addBytes(data.length);
-
+  if (!data || data.length === 0) return;
   try  {
     const decoded = RESP.decode(data);
 
@@ -20,13 +18,13 @@ export async function handleMasterCommands(data: Buffer, connection: Socket): Pr
         console.log("Received command from master:", command);
 
         if (commandName === 'REPLCONF' && command[1]?.toUpperCase() === 'GETACK') {
-          const currentCommandBytes = RESP.encode.array(command).length;
-          replicaOffsetTracker.addBytes(-currentCommandBytes);
-
           const response = await router.executeInternal(command);
           connection.write(response);
           continue;
         }
+
+        const commandBytes = RESP.encode.array(command).length;
+        replicaOffsetTracker.addBytes(commandBytes);
 
         router.executeInternal(command);
       }
