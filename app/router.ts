@@ -20,7 +20,8 @@ import {
   execCommand,
   infoCommand,
   replconfCommand,
-  psyncCommand
+  psyncCommand,
+  waitCommand
 } from "./commands";
 import type { Socket } from "net";
 import { transactionManger } from "./transaction/transactionManager";
@@ -79,6 +80,10 @@ export class CommandRouter {
 
     if (commandName === 'PSYNC') {
       return psyncCommand(args, connection);
+    }
+
+    if (commandName === 'WAIT') {
+      return waitCommand(args, connection);
     }
     
     if (transactionManger.isInTransaction(connection)) {

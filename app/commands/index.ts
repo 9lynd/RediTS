@@ -19,3 +19,4 @@ export * from './discard';
 export * from './info';
 export * from './psync';
 export * from './replconf';
+export * from './wait';
