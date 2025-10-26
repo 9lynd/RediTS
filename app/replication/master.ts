@@ -20,6 +20,8 @@ export async function handleMasterCommands(data: Buffer, connection: Socket): Pr
         if (commandName === 'REPLCONF' && command[1]?.toUpperCase() === 'GETACK') {
           const response = await router.executeInternal(command);
           connection.write(response);
+          const commandBytes = RESP.encode.array(command).length;
+          replicaOffsetTracker.addBytes(commandBytes);
           continue;
         }
 
