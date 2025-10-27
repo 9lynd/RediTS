@@ -21,7 +21,9 @@ import {
   infoCommand,
   replconfCommand,
   psyncCommand,
-  waitCommand
+  waitCommand,
+  configCommand,
+  keysCommand
 } from "./commands";
 import type { Socket } from "net";
 import { transactionManger } from "./transaction/transactionManager";
@@ -52,6 +54,8 @@ export class CommandRouter {
     this.register("INFO", infoCommand);
     this.register("REPLCONF", replconfCommand);
     this.register("PSYNC", psyncCommand);
+    this.register("CONFIG", configCommand);
+    this.register("KEYS", keysCommand);
   }
 
   private register(name: string, handler: (args: string[]) => string | Promise<string>): void {

@@ -20,3 +20,5 @@ export * from './info';
 export * from './psync';
 export * from './replconf';
 export * from './wait';
+export * from './config';
+export * from './keys';

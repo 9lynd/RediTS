@@ -5,6 +5,8 @@ export class ReplicationConfig {
   public masterPort: number | null;
   public replId: string;
   public replOffset: number;
+  public dir: string;
+  public dbfilename: string;
 
   constructor() {
     this.port = 6379;
@@ -13,6 +15,8 @@ export class ReplicationConfig {
     this.masterPort = null;
     this.replId = this.generateReplId();
     this.replOffset = 0;
+    this.dir = '/tmp';
+    this.dbfilename = 'dump.rdb';
   }
 
   public parseArgs(args: string[]): void {
@@ -32,6 +36,12 @@ export class ReplicationConfig {
           this.masterHost = host;
           this.masterPort = parseInt(port);
         }
+        i++;
+      } else if (arg == '--dir') {
+        this.dir = args[i+1];
+        i++;
+      } else if (arg === '--dbfilename') {
+        this.dbfilename = args[i+1];
         i++;
       }
     }

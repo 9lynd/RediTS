@@ -22,6 +22,10 @@ export class Store {
     return null;
   }
 
+  public keys(): string[] {
+    return Array.from(this.data.keys());
+  }
+
   public rpush(key: string, ...values: string[]): number {
     const exist = this.data.get(key);
     if (exist === undefined) {

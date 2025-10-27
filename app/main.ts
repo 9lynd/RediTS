@@ -4,6 +4,7 @@ import { CommandRouter } from "./router";
 import { transactionManger } from "./transaction/transactionManager";
 import { replicationConfig } from "./replication/config";
 import { performHandshake } from "./replication/handshake";
+import { rdbReader } from "./replication/rdbReader";
 
 console.log("Logs from your program will appear here!");
 
@@ -11,6 +12,9 @@ const router = new CommandRouter();
 
 replicationConfig.parseArgs(process.argv.slice(2));
 console.log(`starting Redis Server on port ${replicationConfig.port} with ${replicationConfig.role} role`);
+
+// Load RDB file
+await rdbReader.loadRDB(replicationConfig.dir, replicationConfig.dbfilename);
 
 const server: net.Server = net.createServer((connection: net.Socket) => {
   // Handle connection
