@@ -118,44 +118,77 @@ export class RDBReader {
   }
   
   private readLength(data: Buffer, pos: number): { value: number; newPos: number } {
-    const firstByte = data[pos];
-    const type = (firstByte & 0xC0) >> 6;
-    
-    if (type === 0) {
-      // 6-bit length
-      return { value: firstByte & 0x3F, newPos: pos + 1 };
-    } else if (type === 1) {
-      // 14-bit length
-      const value = ((firstByte & 0x3F) << 8) | data[pos + 1];
-      return { value, newPos: pos + 2 };
-    } else if (type === 2) {
-      // 32-bit length
+  const firstByte = data[pos];
+  const type = (firstByte & 0xC0) >> 6;
+  
+  if (type === 0) {
+    // 00: 6-bit length
+    return { value: firstByte & 0x3F, newPos: pos + 1 };
+  } else if (type === 1) {
+    // 01: 14-bit length
+    const value = ((firstByte & 0x3F) << 8) | data[pos + 1];
+    return { value, newPos: pos + 2 };
+  } else if (type === 2) {
+    // 10: Special case - check the full byte
+    if (firstByte === 0x80) {
+      // 32-bit length (Big-Endian!)
       const value = data.readUInt32BE(pos + 1);
       return { value, newPos: pos + 5 };
+    } else if (firstByte === 0x81) {
+      // 64-bit length (Big-Endian!)
+      const value = Number(data.readBigUInt64BE(pos + 1));
+      return { value, newPos: pos + 9 };
     } else {
-      // Special encoding
-      const encoding = firstByte & 0x3F;
-      if (encoding === 0) {
-        // 8-bit integer
-        return { value: data[pos + 1], newPos: pos + 2 };
-      } else if (encoding === 1) {
-        // 16-bit integer
-        return { value: data.readUInt16LE(pos + 1), newPos: pos + 3 };
-      } else if (encoding === 2) {
-        // 32-bit integer
-        return { value: data.readUInt32LE(pos + 1), newPos: pos + 5 };
-      }
-      throw new Error(`Unsupported special encoding: ${encoding}`);
+      // Old behavior: 32-bit length
+      const value = data.readUInt32BE(pos + 1);
+      return { value, newPos: pos + 5 };
+    }
+  } else {
+    // 11: Special encoding (integer stored as string)
+    const encoding = firstByte & 0x3F;
+    if (encoding === 0) {
+      // 8-bit integer
+      return { value: data.readInt8(pos + 1), newPos: pos + 2 };
+    } else if (encoding === 1) {
+      // 16-bit integer (Little-Endian!)
+      return { value: data.readInt16LE(pos + 1), newPos: pos + 3 };
+    } else if (encoding === 2) {
+      // 32-bit integer (Little-Endian!)
+      return { value: data.readInt32LE(pos + 1), newPos: pos + 5 };
+    }
+    throw new Error(`Unsupported special encoding: ${encoding}`);
+  }
+}
+  
+  private readString(data: Buffer, pos: number): { value: string; newPos: number } {
+  const firstByte = data[pos];
+  const type = (firstByte & 0xC0) >> 6;
+  
+  // Check if it's a special integer encoding (type === 3)
+  if (type === 3) {
+    const encoding = firstByte & 0x3F;
+    if (encoding === 0) {
+      // 8-bit integer
+      const value = data.readInt8(pos + 1).toString();
+      return { value, newPos: pos + 2 };
+    } else if (encoding === 1) {
+      // 16-bit integer (Little-Endian!)
+      const value = data.readInt16LE(pos + 1).toString();
+      return { value, newPos: pos + 3 };
+    } else if (encoding === 2) {
+      // 32-bit integer (Little-Endian!)
+      const value = data.readInt32LE(pos + 1).toString();
+      return { value, newPos: pos + 5 };
     }
   }
   
-  private readString(data: Buffer, pos: number): { value: string; newPos: number } {
-    const length = this.readLength(data, pos);
-    pos = length.newPos;
-    
-    const value = data.slice(pos, pos + length.value).toString();
-    return { value, newPos: pos + length.value };
-  }
+  // Regular string
+  const length = this.readLength(data, pos);
+  pos = length.newPos;
+  
+  const value = data.slice(pos, pos + length.value).toString();
+  return { value, newPos: pos + length.value };
+}
 }
 
 export const rdbReader = new RDBReader();
