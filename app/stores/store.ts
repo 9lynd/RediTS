@@ -8,9 +8,17 @@ export class Store {
   }
 
   public set(key: string, value: string, expiresAt?: Date): void {
-    this.data.set(key, value);
-    if(expiresAt) {
-      setTimeout(() => this.delete(key), expiresAt.getTime() - Date.now());
+    if (expiresAt) {
+      const timeoutMs = expiresAt.getTime() - Date.now();
+      if (timeoutMs <= 0) return;
+
+      this.data.set(key, value);
+      const MAX_TIMEOUT = 2147483647;
+      if (timeoutMs < MAX_TIMEOUT){
+      setTimeout(() => this.delete(key), timeoutMs);
+    }
+    } else {
+      this.data.set(key, value);
     }
   }
 
