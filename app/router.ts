@@ -124,6 +124,12 @@ export class CommandRouter {
       transactionManger.queueCommand(connection, command);
       return RESP.encode.simpleString("QUEUED");
     }
+    if (commandName === 'PING') {
+      if(pubSubManager.isSubscribed(connection)) {
+        return RESP.encode.mixedArray([RESP.encode.bulkString('pong'), RESP.encode.bulkString('')]);
+      }
+      return pingCommand(args);
+    }
 
     const result = this.executeInternal(command);
 
