@@ -22,3 +22,6 @@ export * from './replconf';
 export * from './wait';
 export * from './config';
 export * from './keys';
+export * from './subscribe';
+export * from './unsubscribe';
+export * from './publish';

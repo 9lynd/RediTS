@@ -23,12 +23,16 @@ import {
   psyncCommand,
   waitCommand,
   configCommand,
-  keysCommand
+  keysCommand,
+  subscribeCommand,
+  unsubscribeCommand,
+  publishCommand
 } from "./commands";
 import type { Socket } from "net";
 import { transactionManger } from "./transaction/transactionManager";
 import { replicationConfig } from "./replication/config";
 import { propagationManager } from "./replication/propagation";
+import { pubSubManager } from "./pubsub/manager";
 
 export class CommandRouter {
   private commands: Map<string, (args: string[]) => string | Promise<string>>;
@@ -56,6 +60,7 @@ export class CommandRouter {
     this.register("PSYNC", psyncCommand);
     this.register("CONFIG", configCommand);
     this.register("KEYS", keysCommand);
+    this.register("PUBLISH", publishCommand);
   }
 
   private register(name: string, handler: (args: string[]) => string | Promise<string>): void {
@@ -79,6 +84,22 @@ export class CommandRouter {
     return '';
   }
 
+    if (pubSubManager.isSubscribed(connection)) {
+      const allowedCommands = ['SUBSCRIBE', 'UNSUBSCRIBE', 'PING', 'QUIT'];
+
+      if (!allowedCommands.includes(commandName)) {
+        return RESP.encode.error( 
+          `ERR Can't execute '${commandName.toLowerCase()}': only (P|S)SUBSCRIBE / (P|S)UNSUBSCRIBE / PING / QUIT / RESET are allowed in this context`
+        );
+      }
+    }
+
+    if (commandName === 'SUBSCRIBE') {
+      return subscribeCommand(args, connection);
+    }
+    if (commandName === 'UNSUBSCRIBE') {
+      return unsubscribeCommand(args, connection);
+    }
     if (commandName === 'MULTI') {
       return multiCommand(args, connection);
     }
