@@ -26,7 +26,13 @@ import {
   keysCommand,
   subscribeCommand,
   unsubscribeCommand,
-  publishCommand
+  publishCommand,
+  zaddCommand,
+  zcardCommand,
+  zrangeCommand,
+  zremCommand,
+  zrankCommand,
+  zscoreCommand
 } from "./commands";
 import type { Socket } from "net";
 import { transactionManger } from "./transaction/transactionManager";
@@ -61,6 +67,12 @@ export class CommandRouter {
     this.register("CONFIG", configCommand);
     this.register("KEYS", keysCommand);
     this.register("PUBLISH", publishCommand);
+    this.register("ZADD", zaddCommand);
+    this.register("ZCARD", zcardCommand);
+    this.register("ZRANGE", zrangeCommand);
+    this.register("ZREM", zremCommand);
+    this.register("ZRANK", zrankCommand);
+    this.register("ZSCORE", zscoreCommand);
   }
 
   private register(name: string, handler: (args: string[]) => string | Promise<string>): void {
