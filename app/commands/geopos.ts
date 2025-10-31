@@ -18,7 +18,7 @@ export function geoposCommand(args: string[]): string {
     if (score === null) {
       results.push(RESP.encode.nullArray());
     } else {
-      const { latitude, longitude } = geohashDecodeWGS84(score);
+      const { latitude, longitude } = geohashDecodeWGS84(BigInt(score));
       
       const posArray = RESP.encode.mixedArray([
         RESP.encode.bulkString(longitude.toString()),

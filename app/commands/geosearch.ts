@@ -55,7 +55,7 @@ export function geosearchCommand(args: string[]): string {
     const score = sortedSetStore.getScore(key, member);
     if (score === null) continue;
 
-    const pos = geohashDecodeWGS84(score);
+    const pos = geohashDecodeWGS84(BigInt(score));
     const distance = geohashGetDistance(centerLongitude, centerLatitude, pos.longitude, pos.latitude);
 
     if (distance <= radius) {

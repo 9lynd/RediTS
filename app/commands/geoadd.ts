@@ -22,7 +22,8 @@ export function geoaddCommand(args: string[]): string {
     );
   }
 
-  const score = geohashEncodeWGS84(latitude, longitude);
+  const scoreBigInt = geohashEncodeWGS84(latitude, longitude);
+  const score = Number(scoreBigInt);
   
   const added = sortedSetStore.add(key, member, score);
   return RESP.encode.integer(added);

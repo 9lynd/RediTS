@@ -19,8 +19,8 @@ export function geodistCommand(args: string[]): string {
     return RESP.encode.null();
   }
 
-  const pos1 = geohashDecodeWGS84(score1);
-  const pos2 = geohashDecodeWGS84(score2);
+  const pos1 = geohashDecodeWGS84(BigInt(score1));
+  const pos2 = geohashDecodeWGS84(BigInt(score2));
 
   let distance = geohashGetDistance(pos1.longitude, pos1.latitude, pos2.longitude, pos2.latitude);
 
