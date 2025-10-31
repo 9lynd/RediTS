@@ -31,3 +31,7 @@ export * from './zrange';
 export * from './zrank';
 export * from './zrem';
 export * from './zscore';
+export * from './geoadd';
+export * from './geodist';
+export * from './geopos';
+export * from './geosearch';

@@ -32,7 +32,11 @@ import {
   zrangeCommand,
   zremCommand,
   zrankCommand,
-  zscoreCommand
+  zscoreCommand,
+  geoaddCommand,
+  geodistCommand,
+  geoposCommand,
+  geosearchCommand
 } from "./commands";
 import type { Socket } from "net";
 import { transactionManger } from "./transaction/transactionManager";
@@ -73,6 +77,10 @@ export class CommandRouter {
     this.register("ZREM", zremCommand);
     this.register("ZRANK", zrankCommand);
     this.register("ZSCORE", zscoreCommand);
+    this.register("GEOADD", geoaddCommand);
+    this.register("GEODIST", geodistCommand);
+    this.register("GEOPOS", geoposCommand);
+    this.register("GEOSEARCH", geosearchCommand);
   }
 
   private register(name: string, handler: (args: string[]) => string | Promise<string>): void {
